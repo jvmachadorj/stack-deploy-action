@@ -60,10 +60,12 @@ if [ -n "${INPUT_ENV_FILE}" ];then
     # export ENV_FILE="${INPUT_ENV_FILE}"
 fi
 
-echo -e "\u001b[36mConfiguring registry authentication"
-docker --context remote login ghcr.io \
-    -u "${DOCKER_REGISTRY_USERNAME}" \
-    -p "${DOCKER_REGISTRY_PASSWORD}"
+if [ -n "${INPUT_DOCKER_REGISTRY_USERNAME}" ] && [ -n "${INPUT_DOCKER_REGISTRY_PASSWORD}" ]; then
+  echo -e "\u001b[36mConfiguring registry authentication"
+  echo "${INPUT_DOCKER_REGISTRY_PASSWORD}" | docker --context remote login ghcr.io \
+      -u "${INPUT_DOCKER_REGISTRY_USERNAME}" \
+      --password-stdin
+fi
 
 echo -e "\u001b[36mDeploying Stack: \u001b[37;1m${INPUT_NAME}"
 docker stack deploy -c "${INPUT_FILE}" "${INPUT_NAME}" --with-registry-auth
