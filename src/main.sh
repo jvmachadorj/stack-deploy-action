@@ -53,10 +53,5 @@ if [ -n "${INPUT_ENV_FILE}" ];then
     source "${INPUT_ENV_FILE}"
 fi
 
-echo "Debug: Attempting Docker login"
-set -x  # Enable command printing
-docker login ghcr.io
-set +x  # Disable command printing
-
 echo -e "\u001b[36mDeploying Stack: \u001b[37;1m${INPUT_NAME}"
 docker stack deploy -c "${INPUT_FILE}" "${INPUT_NAME}" --with-registry-auth
