@@ -42,20 +42,6 @@ trap cleanup_trap EXIT HUP INT QUIT PIPE TERM
 echo -e "\u001b[36mVerifying Docker and Setting Context."
 ssh -p "${INPUT_PORT}" "${INPUT_USER}@${INPUT_HOST}" "docker info" > /dev/null
 
-if [ -n "${INPUT_DOCKER_REGISTRY_USERNAME}" ] && [ -n "${INPUT_DOCKER_REGISTRY_PASSWORD}" ]; then
-    echo -e "\u001b[36mConfiguring local registry authentication"
-    # Login locally first
-    echo "${INPUT_DOCKER_REGISTRY_PASSWORD}" | docker login ghcr.io \
-        -u "${INPUT_DOCKER_REGISTRY_USERNAME}" \
-        --password-stdin
-    
-    echo -e "\u001b[36mEnsuring .docker directory exists on remote host"
-    ssh -p "${INPUT_PORT}" "${INPUT_USER}@${INPUT_HOST}" "mkdir -p ~/.docker"
-    
-    echo -e "\u001b[36mCopying Docker credentials to remote host"
-    scp -P "${INPUT_PORT}" ~/.docker/config.json "${INPUT_USER}@${INPUT_HOST}:~/.docker/config.json"
-fi
-
 docker context create remote --docker "host=ssh://${INPUT_USER}@${INPUT_HOST}:${INPUT_PORT}"
 docker context ls
 docker context use remote
