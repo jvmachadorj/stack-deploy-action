@@ -53,5 +53,9 @@ if [ -n "${INPUT_ENV_FILE}" ];then
     source "${INPUT_ENV_FILE}"
 fi
 
+echo -e "\u001b[36mConfiguring registry authentication"
+ssh -p "${INPUT_PORT}" "${INPUT_USER}@${INPUT_HOST}" \
+  "echo '${INPUT_DOCKER_REGISTRY_PASSWORD}' | docker login ghcr.io -u ${INPUT_DOCKER_REGISTRY_USERNAME} --password-stdin"
+
 echo -e "\u001b[36mDeploying Stack: \u001b[37;1m${INPUT_NAME}"
 docker stack deploy -c "${INPUT_FILE}" "${INPUT_NAME}" --with-registry-auth
