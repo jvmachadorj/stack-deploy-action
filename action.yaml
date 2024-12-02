@@ -32,6 +32,12 @@ inputs:
   env_file:
     description: "Environment File"
     required: false
+  docker_registry_username:
+    description: 'Username for Docker registry authentication'
+    required: false
+  docker_registry_password:
+    description: 'Password/token for Docker registry authentication'
+    required: false
 
 runs:
   using: "docker"
