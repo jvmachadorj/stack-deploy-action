@@ -53,36 +53,5 @@ if [ -n "${INPUT_ENV_FILE}" ];then
     source "${INPUT_ENV_FILE}"
 fi
 
-echo -e "\u001b[36mConfiguring registry authentication with debug"
-
-# Debug: Show what credentials we're using (masked)
-echo "Debug: Using registry username: ${INPUT_DOCKER_REGISTRY_USERNAME}"
-echo "Debug: Password length: ${#INPUT_DOCKER_REGISTRY_PASSWORD} characters"
-
-# Create Docker config JSON with the credentials
-echo "Debug: Creating config JSON"
-CONFIG_JSON="{\"auths\":{\"ghcr.io\":{\"auth\":\"$(echo -n "${INPUT_DOCKER_REGISTRY_USERNAME}:${INPUT_DOCKER_REGISTRY_PASSWORD}" | base64)\"}}}"
-
-# Notice the fixed JSON structure - there was an extra quote and curly brace issue before
-echo "Debug: Config JSON structure (auth value masked):"
-echo "${CONFIG_JSON}" | sed 's/{"auth":"[^"]*"}/{\"auth\":\"****\"}/g'
-
-# Setup and verify remote config
-echo "Debug: Setting up remote Docker config"
-ssh -p "${INPUT_PORT}" "${INPUT_USER}@${INPUT_HOST}" "mkdir -p ~/.docker && echo '${CONFIG_JSON}' > ~/.docker/config.json && chmod 600 ~/.docker/config.json"
-
-echo "Debug: Verifying remote config file exists"
-ssh -p "${INPUT_PORT}" "${INPUT_USER}@${INPUT_HOST}" "ls -la ~/.docker/config.json"
-
-echo "Debug: Remote config content (auth masked):"
-ssh -p "${INPUT_PORT}" "${INPUT_USER}@${INPUT_HOST}" "cat ~/.docker/config.json" | sed 's/{"auth":"[^"]*"}/{\"auth\":\"****\"}/g'
-
-# Test pull
-echo "Debug: Testing image pull with docker login first"
-echo "${INPUT_DOCKER_REGISTRY_PASSWORD}" | ssh -p "${INPUT_PORT}" "${INPUT_USER}@${INPUT_HOST}" "docker login ghcr.io -u ${INPUT_DOCKER_REGISTRY_USERNAME} --password-stdin"
-
-echo "Debug: Now testing pull"
-ssh -p "${INPUT_PORT}" "${INPUT_USER}@${INPUT_HOST}" "docker pull ghcr.io/jvmachadorj/mineria:01c0a4b67d315b5ff222326ea815bc7eb3346834"
-
 echo -e "\u001b[36mDeploying Stack: \u001b[37;1m${INPUT_NAME}"
 docker stack deploy -c "${INPUT_FILE}" "${INPUT_NAME}" --with-registry-auth
